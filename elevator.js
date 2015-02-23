@@ -61,14 +61,7 @@
                 // Just go to the first floor on the waiting list.
                 var floorNum = self.waiting[0].floorNum;
                 this.goToFloor(floorNum);
-                
-                // Remove floor from waiting array
-                for (var i = self.waiting.length - 1; i >= 0; i--) {
-                    if (self.waiting[i].floorNum === floorNum) {
-                        self.waiting.splice(i, 1);
-                    }
-                };
-
+                self.removeFloor(floorNum);
             } else {
                 this.goToFloor(0);
             }
@@ -80,19 +73,12 @@
             // @todo finish implementing this
 
             // Check if the elevator is passing a floor that someone is waiting at.
-            for (var i = self.waiting.length - 1; i >= 0; i--) {
-                if (self.waiting[i].floorNum === floorNum) {
+            for (var i = 0; i < self.waiting.length; i++) {
+                if (self.waiting[i].floorNum === floorNum && this.loadFactor() < 0.4) {
                     this.goToFloor(floorNum, true);
-
-                    // Remove floor from waiting array
-                    // @todo move this into a function.
-                    for (var i = self.waiting.length - 1; i >= 0; i--) {
-                        if (self.waiting[i].floorNum === floorNum) {
-                            self.waiting.splice(i, 1);
-                        }
-                    };
+                    self.removeFloor(floorNum);
                 }
-            };
+            }
         });
         elevator.on("stopped_at_floor", function (floorNum) {
             var floors = this.getPressedFloors();
@@ -101,14 +87,7 @@
                 this.goToFloor(nextFloor, true);
             } else if (self.waiting.length > 0) {
                 this.goToFloor(self.waiting[0].floorNum, true);
-
-                // Remove floor from waiting array
-                // @todo move this into a function.
-                for (var i = self.waiting.length - 1; i >= 0; i--) {
-                    if (self.waiting[i].floorNum === self.waiting[0].floorNum) {
-                        self.waiting.splice(i, 1);
-                    }
-                };
+                self.removeFloor(self.waiting[0].floorNum);
             }
         });
     },
@@ -145,6 +124,20 @@
      */
     floorButtonPressed: function (floorNum) {
         this.goToFloor(floorNum);
+    },
+
+    /**
+     * Remove floor from waiting array.
+     *
+     * @param {Number} floorNum
+     * @return {Void}
+     */
+    removeFloor: function (floorNum) {
+        for (var i = 0; i < this.waiting.length; i++) {
+            if (this.waiting[i].floorNum === floorNum) {
+                this.waiting.splice(i, 1);
+            }
+        }
     },
 
     /**
